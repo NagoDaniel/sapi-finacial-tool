@@ -43,6 +43,12 @@ Stop the containers with `./scripts/dev.ps1 down` on PowerShell or `./scripts/de
 docker compose down --volumes
 ```
 
+## Continuous integration
+
+The GitHub Actions workflow in `.github/workflows/ci.yml` runs for every push, pull request, and manual dispatch. It checks Rust formatting and Clippy, runs backend tests and builds the release backend, runs frontend tests and builds the production frontend, runs the PostgreSQL database BDD tests against the project migration, and builds the Docker Compose stack before running the browser E2E suite.
+
+The workflow checks out the public project submodules, uses disposable PostgreSQL databases, and tears down its Docker Compose stack after the browser tests.
+
 ## Local development
 
 - Backend: from `backend`, run `cargo run` with `DATABASE_URL=postgresql://finance:finance_dev_password@localhost:5433/finance_db` and optionally `PORT` (defaults to `8080`) and `RUST_LOG` (defaults to `info`).
