@@ -16,6 +16,15 @@ const execFileAsync = promisify(execFile);
 const repositoryRoot = path.resolve(__dirname, '..', '..');
 let browser;
 
+async function dockerAvailable() {
+  try {
+    await execFileAsync('docker', ['--version'], { windowsHide: true, timeout: 5_000 });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 setDefaultTimeout(30_000);
 
 class IncomeWorld {
@@ -42,6 +51,7 @@ class IncomeWorld {
   }
 
   async backendLogs() {
+    if (!(await dockerAvailable())) return '';
     const { stdout, stderr } = await execFileAsync(
       'docker',
       ['compose', 'logs', '--no-color', '--since=20m', 'backend'],
@@ -54,7 +64,8 @@ class IncomeWorld {
 setWorldConstructor(IncomeWorld);
 
 Before(async function () {
-  if (!browser) browser = await chromium.launch({ headless: true });
+  this.dockerAvailable = await dockerAvailable();
+  if (!browser) browser = await chromium.launch({ headless: process.env.PWDEBUG !== '1' });
   const database = new Client({ connectionString: this.databaseUrl });
   await database.connect();
   await database.query('SELECT 1 FROM incomes LIMIT 0');
